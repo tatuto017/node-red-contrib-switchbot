@@ -31,7 +31,7 @@
     'Bot': 'Bot',
     'Ceiling Light': 'シーリングライト',
     'Ceiling Light Pro': 'シーリングライト',
-    'Humidifier2': '除湿機',
+    'Humidifier2': '加湿器',
     'Air Purifier Table VOC': '空気清浄機',
     'Meter': '温湿度計',
     'MeterPro(CO2)': '温湿度計',
