@@ -32,7 +32,7 @@
     { value: 'Plug Mini (JP)', label: 'スマートプラグ' },
     { value: 'Bot', label: 'Bot' },
     { value: 'Ceiling Light', label: 'シーリングライト' },
-    { value: 'Humidifier2', label: '除湿機' },
+    { value: 'Humidifier2', label: '加湿器' },
     { value: 'Air Purifier Table VOC', label: '空気清浄機' },
     { value: 'Air Conditioner', label: 'エアコン' },
   ];
