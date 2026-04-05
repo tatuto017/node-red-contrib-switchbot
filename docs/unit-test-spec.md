@@ -961,6 +961,7 @@ node-red-contrib-switchbot
 | 検証 | `'Humidifier2'` が含まれる |
 | 検証 | `'Air Purifier Table VOC'` が含まれる |
 | 検証 | `'Meter'` が含まれる |
+| 検証 | `'Video Doorbell'` が含まれる |
 
 ##### `Ceiling Light Pro は統合されているため含まれない`
 
@@ -1066,16 +1067,17 @@ node-red-contrib-switchbot
 | 検証 | `'Air Purifier Table VOC'` のラベルが正しい |
 | 検証 | `'Meter'` のラベルが正しい |
 | 検証 | `'MeterPro(CO2)'` のラベルが正しい |
+| 検証 | `'Video Doorbell'` のラベルが正しい |
 
 ---
 
 #### describe: `SWITCHBOT_STATUS_SUPPORTED_TYPES`
 
-##### `6種類のサポートタイプが定義されている`
+##### `7種類のサポートタイプが定義されている`
 
 | 項目 | 内容 |
 |------|------|
-| 検証 | 配列の長さが `6` である |
+| 検証 | 配列の長さが `7` である |
 
 ##### `Ceiling Light Pro と MeterPro(CO2) は含まれない（統合済み）`
 

@@ -35,6 +35,7 @@
     'Air Purifier Table VOC': '空気清浄機',
     'Meter': '温湿度計',
     'MeterPro(CO2)': '温湿度計',
+    'Video Doorbell': 'ドアホン',
   };
 
   /**
@@ -48,6 +49,7 @@
     'Humidifier2',
     'Air Purifier Table VOC',
     'Meter',
+    'Video Doorbell',
   ];
 
   /**

@@ -11,6 +11,7 @@ export const SUPPORTED_DEVICE_TYPES = [
   'Humidifier2',
   'Air Purifier Table VOC',
   'Meter',
+  'Video Doorbell',
 ] as const;
 
 export type SupportedDeviceType = (typeof SUPPORTED_DEVICE_TYPES)[number];
