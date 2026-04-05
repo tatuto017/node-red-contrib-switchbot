@@ -1,0 +1,132 @@
+<script src="switchbot/command-ui.js"></script>
+<script type="text/javascript">
+  RED.nodes.registerType('switchbot-command', {
+    category: 'SwitchBot',
+    color: '#f2a06d',
+    defaults: {
+      name: { value: '' },
+      config: { value: '', type: 'switchbot-config', required: true },
+      deviceType: { value: '' },
+      deviceId: { value: '' },
+      command: { value: '' },
+      parameter: { value: '' },
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'inject.png',
+    label: function () {
+      return this.name || 'switchbot-command';
+    },
+    oneditprepare: function () {
+      const self = this;
+      const deviceTypeSelect = $('#node-input-deviceType');
+      const deviceSelect = $('#node-input-deviceId');
+      const operationArea = $('#switchbot-command-operation');
+
+      // 選択中のデバイスIDを保持する変数
+      // タイプ切り替え時も「最後にユーザーが選択したデバイスID」を使って再選択するために使用する
+      let lastSelectedDeviceId = self.deviceId || '';
+
+      // デバイスタイプのプルダウンを初期化する
+      SWITCHBOT_COMMAND_DEVICE_TYPES.forEach(function (type) {
+        deviceTypeSelect.append($('<option>').val(type.value).text(type.label));
+      });
+      deviceTypeSelect.val(self.deviceType);
+
+      // リフレッシュボタン押下時: 現在の選択値を保持しつつデバイス一覧を再取得する
+      $('#switchbot-command-refresh').on('click', function () {
+        const selectedType = String(deviceTypeSelect.val());
+        if (!selectedType) return;
+        const currentDeviceId = String(deviceSelect.val() || '');
+        deviceSelect.empty();
+        fetchDevices(selectedType, deviceSelect, currentDeviceId || null, function () {
+          renderOperationUI(selectedType, operationArea, self);
+        });
+      });
+
+      // デバイスタイプ変更時: デバイス一覧を更新し、操作UIを切り替える
+      // lastSelectedDeviceId を使って絞り込み後の一覧に選択済みデバイスがあれば再選択する
+      deviceTypeSelect.on('change', function () {
+        const selectedType = String($(this).val());
+        deviceSelect.empty();
+        fetchDevices(selectedType, deviceSelect, lastSelectedDeviceId || null, function () {
+          renderOperationUI(selectedType, operationArea, self);
+        });
+      });
+
+      // デバイス変更時: ユーザーが選択したデバイスIDを保持し、操作UIを再描画する
+      deviceSelect.on('change', function () {
+        lastSelectedDeviceId = String($(this).val() || '');
+        const selectedType = String(deviceTypeSelect.val());
+        renderOperationUI(selectedType, operationArea, self);
+      });
+
+      // 初期表示: デバイス一覧と操作UIを描画する
+      if (self.deviceType) {
+        fetchDevices(self.deviceType, deviceSelect, lastSelectedDeviceId || null, function () {
+          renderOperationUI(self.deviceType, operationArea, self);
+        });
+      }
+    },
+    oneditsave: function () {
+      // 操作UIから command / parameter を収集する
+      const commandSelect = $('#switchbot-command-command');
+      const subCommandSelect = $('#switchbot-command-sub-command');
+
+      const deviceType = String($('#node-input-deviceType').val());
+
+      if (deviceType === 'Air Conditioner' && String(commandSelect.val()) === 'setAll') {
+        // 空調コマンド: "{temperature},{mode},{fan_speed},on" 形式のパラメータを生成する
+        const temp = $('#switchbot-ac-temperature').val();
+        const mode = $('#switchbot-ac-mode').val();
+        const fan = $('#switchbot-ac-fan').val();
+        this.command = 'setAll';
+        this.parameter = temp + ',' + mode + ',' + fan + ',on';
+      } else if (deviceType === 'Ceiling Light') {
+        const cmd = String(commandSelect.val());
+        if (cmd === 'setBrightness' || cmd === 'setColorTemperature') {
+          this.command = cmd;
+          this.parameter = String($('#switchbot-command-param-value').val());
+        } else {
+          // スイッチ: サブコマンドセレクト（turnOn/turnOff）から取得する
+          this.command = String(subCommandSelect.val() || 'turnOn');
+          this.parameter = '';
+        }
+      } else {
+        this.command = String(subCommandSelect.length ? subCommandSelect.val() : commandSelect.val());
+        this.parameter = '';
+      }
+    },
+  });
+</script>
+
+<script type="text/html" data-template-name="switchbot-command">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> 名前</label>
+    <input type="text" id="node-input-name" placeholder="名前" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-config"><i class="fa fa-cog"></i> 設定</label>
+    <input type="text" id="node-input-config" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-deviceType"><i class="fa fa-microchip"></i> デバイスタイプ</label>
+    <select id="node-input-deviceType"></select>
+    <button type="button" id="switchbot-command-refresh" style="margin-left:4px;" title="デバイス一覧を再取得する"><i class="fa fa-refresh"></i></button>
+  </div>
+  <div class="form-row">
+    <label for="node-input-deviceId"><i class="fa fa-plug"></i> デバイス</label>
+    <select id="node-input-deviceId"></select>
+  </div>
+  <!-- デバイス操作UIの描画エリア -->
+  <div id="switchbot-command-operation"></div>
+</script>
+
+<script type="text/html" data-help-name="switchbot-command">
+  <p>SwitchBot APIを使用して、指定したデバイスにコマンドを送信します。</p>
+  <h3>出力</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">object</span></dt>
+    <dd>コマンドの送信結果</dd>
+  </dl>
+</script>

@@ -1,0 +1,85 @@
+<script src="switchbot/status-ui.js"></script>
+<script type="text/javascript">
+  RED.nodes.registerType('switchbot-status', {
+    category: 'SwitchBot',
+    color: '#6db3f2',
+    defaults: {
+      name: { value: '' },
+      config: { value: '', type: 'switchbot-config', required: true },
+      deviceType: { value: '' },
+      deviceId: { value: '' },
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'inject.png',
+    label: function () {
+      return this.name || 'switchbot-status';
+    },
+    oneditprepare: function () {
+      const self = this;
+      const deviceTypeSelect = $('#node-input-deviceType');
+      const deviceSelect = $('#node-input-deviceId');
+      const refreshButton = $('#switchbot-status-refresh');
+
+      // 選択中のデバイスIDを保持する変数
+      // タイプ切り替え時も「最後にユーザーが選択したデバイスID」を使って再選択するために使用する
+      let lastSelectedDeviceId = self.deviceId || '';
+
+      // デバイスタイプ変更時にデバイス一覧を絞り込む
+      // lastSelectedDeviceId を使って絞り込み後の一覧に選択済みデバイスがあれば再選択する
+      deviceTypeSelect.on('change', function () {
+        const selectedType = String($(this).val());
+        deviceSelect.empty();
+        fetchStatusDevices(selectedType, deviceSelect, lastSelectedDeviceId || null);
+      });
+
+      // デバイス変更時: ユーザーが選択したデバイスIDを保持する
+      deviceSelect.on('change', function () {
+        lastSelectedDeviceId = String($(this).val() || '');
+      });
+
+      // リフレッシュボタン押下時: 選択済みのデバイスタイプ・デバイスIDを保持して再取得する
+      refreshButton.on('click', function () {
+        const currentType = String(deviceTypeSelect.val() || '');
+        const currentDeviceId = String(deviceSelect.val() || '');
+        deviceTypeSelect.empty();
+        deviceSelect.empty();
+        fetchStatusDeviceTypes(deviceTypeSelect, currentType || null, deviceSelect, currentDeviceId || null);
+      });
+
+      // 初期表示時にデバイスタイプ一覧を取得してプルダウンを構築する
+      fetchStatusDeviceTypes(deviceTypeSelect, self.deviceType, deviceSelect, lastSelectedDeviceId);
+    },
+  });
+</script>
+
+<script type="text/html" data-template-name="switchbot-status">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> 名前</label>
+    <input type="text" id="node-input-name" placeholder="名前" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-config"><i class="fa fa-cog"></i> 設定</label>
+    <input type="text" id="node-input-config" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-deviceType"><i class="fa fa-microchip"></i> デバイスタイプ</label>
+    <select id="node-input-deviceType" style="width: calc(70% - 30px);"></select>
+    <button type="button" id="switchbot-status-refresh" class="red-ui-button" style="margin-left: 6px;" title="デバイス一覧を再取得">
+      <i class="fa fa-refresh"></i>
+    </button>
+  </div>
+  <div class="form-row">
+    <label for="node-input-deviceId"><i class="fa fa-plug"></i> デバイス</label>
+    <select id="node-input-deviceId"></select>
+  </div>
+</script>
+
+<script type="text/html" data-help-name="switchbot-status">
+  <p>SwitchBot APIを使用して、指定したデバイスのステータスを取得します。</p>
+  <h3>出力</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">object</span></dt>
+    <dd>取得したデバイスのステータス情報</dd>
+  </dl>
+</script>
